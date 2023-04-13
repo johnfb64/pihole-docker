@@ -1,0 +1,4 @@
+---
+# defaults file for prep_raspberry
+url_gpg_key: "https://download.docker.com/linux/ubuntu/gpg"
+

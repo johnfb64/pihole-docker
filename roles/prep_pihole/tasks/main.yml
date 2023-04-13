@@ -1,0 +1,71 @@
+---
+# tasks file for prep_raspberry
+- name: raspberry preparation
+  ansible.builtin.apt:
+    name: aptitude
+    state: latest
+    update_cache: true
+
+
+- name: install requeried packages
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+    state: latest
+    update_cache: true
+
+- name: Add docker GPG apt key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add docker repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+
+- name: install docker
+  ansible.builtin.apt:
+    name: docker-ce
+    state: latest
+    update_cache: true
+
+- name: Docker module for python
+  pip:
+    name: docker
+
+- name: Crate pihole directory
+  ansible.builtin.file:
+    path: ~/pihole
+    state: directory
+    mode: '0755'
+
+
+- name: Copy docker compose file
+  copy:
+    src: ~/pihole-docker/compose/docker-compose.yml
+    dest: ~/pihole
+
+
+#- name: deploy-docker-compose
+#  docker_compose:
+#    project_src: ~/pihole-docker/compose/
+#    file: docker-compose.yml
+
+
+- name: restart and enable service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Execute docker compose via shell
+  shell:
+    chdir: ~/pihole
+    cmd: docker-compose up -d
